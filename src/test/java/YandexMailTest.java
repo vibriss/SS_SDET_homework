@@ -1,28 +1,51 @@
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.openqa.selenium.Platform;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
-import pages.YandexPage;
+import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.remote.RemoteWebDriver;
+import pages.MailPage;
 import utils.LetterContent;
-
-import java.util.concurrent.TimeUnit;
 
 public class YandexMailTest {
 
     private static WebDriver driver;
-    private static YandexPage yandexPage;
+    private static MailPage mailPage;
+    private static String mailPageUrl;
+    private static String login;
+    private static String password;
+    private static String mailTo;
+    private static String subject;
 
     @BeforeClass
-    public static void prepareTestEnvironment(){
-        driver = new ChromeDriver();
-        driver.get("http://yandex.ru");
+    public static void prepareTestEnvironment() throws IOException {
+        Properties properties = new Properties();
+        properties.load(new FileInputStream("src/test/resources/test.properties"));
+
+        DesiredCapabilities capabilities = DesiredCapabilities.chrome();
+        capabilities.setPlatform(Platform.WINDOWS);
+        capabilities.setBrowserName("chrome");
+        capabilities.setVersion("90.0.4430.72");
+
+        mailPageUrl = properties.getProperty("mailPageUrl");
+        login = properties.getProperty("login");
+        password = properties.getProperty("password");
+        mailTo = properties.getProperty("mailTo");
+        subject = properties.getProperty("subject");
+
+        driver = new RemoteWebDriver(new URL("http://localhost:4444/wd/hub"), capabilities);
+        driver.get(mailPageUrl);
         driver.manage().timeouts().implicitlyWait(3, TimeUnit.SECONDS);
 
-        yandexPage = new YandexPage(driver);
-        yandexPage.login("sdet.kotov", "sdettest");
-        yandexPage.getMailbox();
+        mailPage = new MailPage(driver);
+        mailPage.getAuthorizationPage().authorize(login, password);
     }
 
     @AfterClass
@@ -32,13 +55,10 @@ public class YandexMailTest {
 
     @Test
     public void givenSendNewLetterWithProvidedTheme_whenExpectIncrementLettersCountWithProvidedTheme_thenSuccess(){
-        int lettersCountBefore = yandexPage.getLettersCountWithTheme("Simbirsoft theme");
-
-        yandexPage.writeNewLetter("sdet.kotov@yandex.ru", "Simbirsoft theme", LetterContent.compose(lettersCountBefore));
-
-        yandexPage.waitForNewLetters();
-
-        int lettersCountAfter = yandexPage.getLettersCountWithTheme("Simbirsoft theme");
+        long lettersCountBefore = mailPage.getLettersCountWithTheme(subject);
+        mailPage.writeNewLetter(mailTo, subject, LetterContent.compose(lettersCountBefore));
+        mailPage.waitForNewLetters();
+        long lettersCountAfter = mailPage.getLettersCountWithTheme(subject);
 
         Assert.assertEquals(lettersCountAfter, lettersCountBefore + 1);
     }
