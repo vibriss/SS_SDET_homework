@@ -9,14 +9,16 @@ public class LetterContent {
     private static String pluralize(long number, String[] words) {
         long dozens = number % 100;
         long units = dozens % 10;
+        int i;
         if (dozens > 10 && dozens < 20) {
-            return words[2];
+            i = 2;
         } else if (units > 1 && units < 5) {
-            return words[1];
+            i = 1;
         } else if (units == 1) {
-            return words[0];
+            i = 0;
         } else {
-            return words[2];
+            i = 2;
         }
+        return words[i];
     }
 }

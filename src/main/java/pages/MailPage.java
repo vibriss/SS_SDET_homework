@@ -41,7 +41,7 @@ public class MailPage {
     private WebElement loadingBar;
 
     @FindAll(@FindBy(className = "mail-MessageSnippet-Item_subject"))
-    List<WebElement> subjects;
+    private List<WebElement> subjects;
 
     public MailPage(WebDriver driver) {
         PageFactory.initElements(driver, this);
