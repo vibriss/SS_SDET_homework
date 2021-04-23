@@ -54,6 +54,10 @@ public class YandexMailUITest {
         driver.quit();
     }
 
+    /**
+     * Проверка UI: отправить письмо самому себе с заданной темой, в теле письма указать количество найденных писем с такой же темой.
+     * Удостовериться, что письмо пришло и что количество писем с заданной темой выросло на 1.
+     */
     @Test
     public void givenSendNewLetterWithProvidedTheme_whenExpectIncrementLettersCountWithProvidedTheme_thenSuccess(){
         long lettersCountBefore = mailPage.getLettersCountWithTheme(subject);
